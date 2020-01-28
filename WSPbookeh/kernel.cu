@@ -4,7 +4,7 @@
 
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
+//
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
@@ -26,7 +26,7 @@ static bool GLLogCall(const char* function, const char* file, int line)
 	while (GLenum error = glGetError())
 	{
 		std::cout << " [OpenGL error] (" << error << ")" << function <<
-			" "<< file << ": " << line << std::endl;
+			" " << file << ": " << line << std::endl;
 
 		return false;
 	}
@@ -37,7 +37,7 @@ struct ShaderProgramSource
 {
 	std::string VertexSource;
 	std::string FragmentSource;
-	
+
 };
 
 
@@ -67,7 +67,7 @@ static ShaderProgramSource ParseShader(const std::string& filepath)
 			if (type != ShaderType::NONE)
 			{
 				ss[(int)type] << line << "\n";
-			}	
+			}
 
 		}
 	}
@@ -81,7 +81,7 @@ static unsigned int CompileShader(unsigned int type, const std::string& source)
 	const char* src = source.c_str();
 	glShaderSource(id, 1, &src, nullptr);
 	glCompileShader(id);
-	
+
 
 	int result;
 	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
@@ -126,156 +126,156 @@ static int CreateShader(const std::string& vertexShader, const std::string& frag
 
 int main(void)
 {
-		GLFWwindow* window;
+	GLFWwindow* window;
 
-		/* Initialize the library */
-		if (!glfwInit())
-			return -1;
+	/* Initialize the library */
+	if (!glfwInit())
+		return -1;
 
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-
-
-		/* Create a windowed mode window and its OpenGL context */
-		window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-		if (!window)
-		{
-			glfwTerminate();
-			return -1;
-		}
-
-		/* Make the window's context current */
-		glfwMakeContextCurrent(window);
-
-		glfwSwapInterval(1);
-
-		if (glewInit() != GLEW_OK)
-			std::cout << "GLEW error!" << std::endl;
-
-		//std::cout << glGetString(GL_VERSION) << std::endl;
-
-		float positions[] = {
-			-0.5f, -0.5f,
-			 0.5f, -0.5f,
-			 0.5f,  0.5f,
-			 -0.5f,  0.5f,
-		};
-
-		unsigned int indicies[] = {
-		0, 1, 2,
-		2, 3,0
-		};
-
-		unsigned int vao;
-		GLCall(glGenVertexArrays(1, &vao));
-		GLCall(glBindVertexArray(vao));
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 
-		unsigned int buffer;
-		glGenBuffers(1, &buffer);
-		glBindBuffer(GL_ARRAY_BUFFER, buffer);
-		glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
-
-		unsigned int ibo; 
-		glGenBuffers(1, &ibo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW);
-
-
-		ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
-
-		std::cout << "VERTEX" << std::endl;
-		std::cout << source.VertexSource << std::endl;
-		std::cout << "FRAGMENT" << std::endl;
-		std::cout << source.FragmentSource << std::endl;
-
-		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-		GLCall(glUseProgram(shader));
-
-		GLCall(int location = glGetUniformLocation(shader, "u_Color"));
-		ASSERT(location != -1);
-		glUniform4f(location, 0.8f, 0.6f, 0.0f, 0.3f);
-
-		glBindVertexArray(0);
-		glUseProgram(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_BLEND);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-		
-		float r = 0.0f;
-		float increment = 0.05f;
-		/* Loop until the user closes the window */
-		while (!glfwWindowShouldClose(window))
-		{
-			/* Render here */
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			glUseProgram(shader);
-			glUniform4f(location, r, 0.6f, 0.0f, 0.3f);
-
-	
-			glBindVertexArray(vao);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-			
-
-			glDisable(GL_CULL_FACE);
-			//glDrawArrays(GL_TRIANGLES, 0, 6);
-		
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
-
-			if (r > 1.0f)
-				increment = -0.05f;
-			else if (r < 0.0f)
-				increment = 0.05f;
-
-			r += increment;
-			
-			float baseX = 0.0f;
-			float baseY = 0.0f;
-			float stage = (3.14 * 2.f) / 70.f;
-			float radius = 0.3f;
-			glLineWidth(4.0);
-
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex2f(baseX, baseY);
-			for (float tempAngle = 0.0f; tempAngle <= 3.14 * 2.01f; tempAngle += stage) {
-				float x = baseX + radius * cos(tempAngle);
-				float y = baseY + radius * sin(tempAngle);
-				glVertex2f(x, y);
-			}
-
-			glEnd();
-			baseX = 0.5f;
-			baseY = 0.5f;
-
-			glBegin(GL_TRIANGLE_FAN);
-			glVertex2f(baseX, baseY);
-			for (float tempAngle = 0.0f; tempAngle <= 3.14 * 2.01f; tempAngle += stage) {
-				float x = baseX + radius * cos(tempAngle);
-				float y = baseY + radius * sin(tempAngle);
-				glVertex2f(x, y);
-			}
-
-			glEnd();
-
-			/* Swap front and back buffers */
-			glfwSwapBuffers(window);
-
-			/* Poll for and process events */
-			glfwPollEvents();
-		}
-
-		glDeleteProgram(shader);
-
+	/* Create a windowed mode window and its OpenGL context */
+	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	if (!window)
+	{
 		glfwTerminate();
-		return 0;
+		return -1;
+	}
+
+	/* Make the window's context current */
+	glfwMakeContextCurrent(window);
+
+	glfwSwapInterval(1);
+
+	if (glewInit() != GLEW_OK)
+		std::cout << "GLEW error!" << std::endl;
+
+	//std::cout << glGetString(GL_VERSION) << std::endl;
+
+	float positions[] = {
+		-0.5f, -0.5f,
+		 0.5f, -0.5f,
+		 0.5f,  0.5f,
+		 -0.5f,  0.5f,
+	};
+
+	unsigned int indicies[] = {
+	0, 1, 2,
+	2, 3,0
+	};
+
+	unsigned int vao;
+	GLCall(glGenVertexArrays(1, &vao));
+	GLCall(glBindVertexArray(vao));
+
+
+	unsigned int buffer;
+	glGenBuffers(1, &buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, buffer);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(float), positions, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, 0);
+
+	unsigned int ibo;
+	glGenBuffers(1, &ibo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indicies, GL_STATIC_DRAW);
+
+
+	ShaderProgramSource source = ParseShader("res/shaders/Basic.shader");
+
+	std::cout << "VERTEX" << std::endl;
+	std::cout << source.VertexSource << std::endl;
+	std::cout << "FRAGMENT" << std::endl;
+	std::cout << source.FragmentSource << std::endl;
+
+	unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+	GLCall(glUseProgram(shader));
+
+	GLCall(int location = glGetUniformLocation(shader, "u_Color"));
+	ASSERT(location != -1);
+	glUniform4f(location, 0.8f, 0.6f, 0.0f, 0.3f);
+
+	glBindVertexArray(0);
+	glUseProgram(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_BLEND);
+	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	float r = 0.0f;
+	float increment = 0.05f;
+	/* Loop until the user closes the window */
+	while (!glfwWindowShouldClose(window))
+	{
+		/* Render here */
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		glUseProgram(shader);
+		glUniform4f(location, r, 0.6f, 0.0f, 0.3f);
+
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+
+		glDisable(GL_CULL_FACE);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+
+		if (r > 1.0f)
+			increment = -0.05f;
+		else if (r < 0.0f)
+			increment = 0.05f;
+
+		r += increment;
+
+		float baseX = 0.0f;
+		float baseY = 0.0f;
+		float stage = (3.14 * 2.f) / 70.f;
+		float radius = 0.3f;
+		glLineWidth(4.0);
+
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2f(baseX, baseY);
+		for (float tempAngle = 0.0f; tempAngle <= 3.14 * 2.01f; tempAngle += stage) {
+			float x = baseX + radius * cos(tempAngle);
+			float y = baseY + radius * sin(tempAngle);
+			glVertex2f(x, y);
+		}
+
+		glEnd();
+		baseX = 0.5f;
+		baseY = 0.5f;
+
+		glBegin(GL_TRIANGLE_FAN);
+		glVertex2f(baseX, baseY);
+		for (float tempAngle = 0.0f; tempAngle <= 3.14 * 2.01f; tempAngle += stage) {
+			float x = baseX + radius * cos(tempAngle);
+			float y = baseY + radius * sin(tempAngle);
+			glVertex2f(x, y);
+		}
+
+		glEnd();
+
+		/* Swap front and back buffers */
+		glfwSwapBuffers(window);
+
+		/* Poll for and process events */
+		glfwPollEvents();
+	}
+
+	glDeleteProgram(shader);
+
+	glfwTerminate();
+	return 0;
 }
 
